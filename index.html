@@ -2,34 +2,181 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>梦幻世界</title>
+<title>花海</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{
   height:100vh;overflow:hidden;
-  font-family:"华文楷体","KaiTi","Microsoft YaHei",serif;
-  background-image:url("u=1792083036,3890024348&fm=253&fmt=auto&app=120&f=JPEG.webp");
-  background-size:cover;
-  background-position:center;
-  position:relative;
+  font-family:"Microsoft YaHei","华文楷体","KaiTi",sans-serif;
+  position:relative;cursor:pointer;
+  user-select:none;
 }
 
-.hd{position:absolute;top:22px;left:50%;transform:translateX(-50%);text-align:center;z-index:10;}
-.hd h1{font-size:72px;color:#FFFFFF;text-shadow:0 2px 4px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3);letter-spacing:18px;font-weight:700;animation:slideLeft 1.2s ease-out forwards, floatUpDown 3s ease-in-out 1.2s infinite;}
-.hd p{font-size:26px;color:#FFFFFF;margin-top:10px;letter-spacing:5px;font-weight:400;text-shadow:0 2px 4px rgba(0,0,0,0.5), 0 3px 8px rgba(0,0,0,0.3);animation:slideRight 1.2s ease-out forwards, floatUpDown2 3s ease-in-out 1.2s infinite;}
+.bg{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  background-size:cover;background-position:center;
+  transition:opacity 0.8s ease;
+}
 
-@keyframes slideLeft{0%{transform:translateX(-80px);opacity:0;}100%{transform:translateX(0);opacity:1;}}
-@keyframes slideRight{0%{transform:translateX(80px);opacity:0;}100%{transform:translateX(0);opacity:1;}}
-@keyframes floatUpDown{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
-@keyframes floatUpDown2{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+.text-box{
+  position:absolute;top:50%;left:5%;transform:translateY(-50%);
+  text-align:left;z-index:10;width:80%;
+  transition:opacity 0.6s ease;
+}
+
+.main-title{
+  font-size:64px;color:#FFFFFF;
+  text-shadow:0 2px 6px rgba(0,0,0,0.5), 0 4px 16px rgba(0,0,0,0.3);
+  font-weight:700;letter-spacing:6px;margin-bottom:16px;
+}
+
+.intro-text{
+  font-size:28px;color:#FFFFFF;
+  text-shadow:0 2px 4px rgba(0,0,0,0.5), 0 3px 10px rgba(0,0,0,0.3);
+  font-weight:400;letter-spacing:3px;line-height:1.8;
+}
+
+.prompt{
+  position:absolute;bottom:10%;left:50%;transform:translateX(-50%);
+  z-index:10;text-align:center;
+  animation:blink 1.5s ease-in-out infinite;
+}
+.prompt-text{
+  font-size:28px;color:#FFFFFF;
+  text-shadow:0 2px 4px rgba(0,0,0,0.5), 0 3px 10px rgba(0,0,0,0.3);
+  font-weight:300;letter-spacing:4px;
+}
+.arrow{
+  font-size:32px;color:#FFFFFF;
+  text-shadow:0 2px 4px rgba(0,0,0,0.5);
+  margin-top:4px;
+  animation:arrowMove 1.2s ease-in-out infinite;
+}
+
+@keyframes blink{0%,100%{opacity:0.5;}50%{opacity:1;}}
+@keyframes arrowMove{0%,100%{transform:translateY(0);}50%{transform:translateY(8px);}}
 </style>
 </head>
 <body>
 
-<div class="hd">
-  <h1>花海</h1>
-  <p>你好，欢迎来到花海</p>
+<div class="bg" id="bgA" style="z-index:1;opacity:1;"></div>
+<div class="bg" id="bgB" style="z-index:0;opacity:0;"></div>
+
+<!-- 第1屏：花海 -->
+<div class="text-box" id="page1">
+  <div class="main-title" style="text-align:left;">花海</div>
+  <div class="intro-text" style="text-align:left;">你好，欢迎来到花海</div>
 </div>
+
+<!-- 第2屏：介绍 -->
+<div class="text-box" id="page2" style="opacity:0;display:none;">
+  <div class="intro-text">
+    这是花的海洋<br>
+    这里的花是蓝色的，很漂亮<br>
+    是自己画的
+  </div>
+</div>
+
+<!-- 第3屏：开始换图 -->
+<div class="text-box" id="page3" style="opacity:0;display:none;">
+  <div class="main-title" id="imgTitle"></div>
+  <div class="intro-text" id="imgIntro"></div>
+</div>
+
+<!-- 谢谢观看 -->
+<div class="text-box" id="endText" style="opacity:0;display:none;">
+  <div class="main-title">谢谢观看</div>
+</div>
+
+<div class="prompt" id="prompt">
+  <div class="prompt-text">请摁一下</div>
+  <div class="arrow">▼</div>
+</div>
+
+<script>
+const images = [
+  "img3.jpg",
+  "img2.png",
+  "u=2986821151,1279372047&fm=253&fmt=auto&app=120&f=JPEG.webp"
+];
+
+const titles = [
+  "蓝花世界",
+  "郁金香世界",
+  "蓝花世界"
+];
+
+const intros = [
+  "这里的花朵也是蓝色的，也是自己画的<br>我是参照我在河边看到一坡柳树才想到的<br>才开始动手画画",
+  "这是粉色的郁金香，也是自己画的<br>是本作者出去游玩而看到的",
+  "你知道为什么现在已经是第三张蓝色的花吗？<br>因为我是双子座，双子座的幸运色是蓝色<br>所以我喜欢蓝色的花，这个花会好看一点<br>这个是我从第一张图片上编程课而想到的<br>把它画了下来，来做背景图，做草稿图"
+];
+
+let mode = 0;
+let imgStep = 0;
+let active = 'A';
+const bgA = document.getElementById('bgA');
+const bgB = document.getElementById('bgB');
+bgA.style.backgroundImage = 'url("u=1792083036,3890024348&fm=253&fmt=auto&app=120&f=JPEG.webp")';
+
+document.body.addEventListener('click', function() {
+  if (mode === 0) {
+    // 第1屏 → 第2屏
+    mode = 1;
+    document.getElementById('page1').style.opacity = '0';
+    setTimeout(() => {
+      document.getElementById('page1').style.display = 'none';
+      document.getElementById('page2').style.display = 'block';
+      document.getElementById('page2').style.opacity = '1';
+    }, 600);
+    
+  } else if (mode === 1) {
+    // 第2屏 → 开始换图
+    mode = 2;
+    document.getElementById('page2').style.opacity = '0';
+    setTimeout(() => {
+      document.getElementById('page2').style.display = 'none';
+      document.getElementById('page3').style.display = 'block';
+      document.getElementById('page3').style.opacity = '1';
+      // 显示第一张图的信息
+      document.getElementById('imgTitle').textContent = titles[0];
+      document.getElementById('imgIntro').innerHTML = intros[0];
+    }, 600);
+    
+  } else if (mode === 2) {
+    // 换图
+    imgStep++;
+    
+    if (imgStep < images.length) {
+      // 切换背景
+      if (active === 'A') {
+        bgB.style.backgroundImage = 'url("' + images[imgStep] + '")';
+        bgB.style.zIndex = '1'; bgB.style.opacity = '1'; bgA.style.opacity = '0'; active = 'B';
+        setTimeout(() => { bgA.style.zIndex = '0'; bgA.style.backgroundImage = 'none'; }, 900);
+      } else {
+        bgA.style.backgroundImage = 'url("' + images[imgStep] + '")';
+        bgA.style.zIndex = '1'; bgA.style.opacity = '1'; bgB.style.opacity = '0'; active = 'A';
+        setTimeout(() => { bgB.style.zIndex = '0'; bgB.style.backgroundImage = 'none'; }, 900);
+      }
+      // 更新文字
+      document.getElementById('imgTitle').textContent = titles[imgStep];
+      document.getElementById('imgIntro').innerHTML = intros[imgStep];
+    }
+    
+    if (imgStep >= images.length) {
+      mode = 3;
+      document.getElementById('page3').style.opacity = '0';
+      document.getElementById('prompt').style.opacity = '0';
+      setTimeout(() => {
+        document.getElementById('page3').style.display = 'none';
+        document.getElementById('prompt').style.display = 'none';
+        document.getElementById('endText').style.display = 'block';
+        document.getElementById('endText').style.opacity = '1';
+      }, 600);
+    }
+  }
+});
+</script>
 
 </body>
 </html>
