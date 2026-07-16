@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>花海</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -10,30 +11,72 @@ body{
   font-family:"Microsoft YaHei","华文楷体","KaiTi",sans-serif;
   position:relative;cursor:pointer;
   user-select:none;
+  background:linear-gradient(180deg, #FFFFFF 0%, #E8F0FA 20%, #B8D4EC 50%, #7BAED4 80%, #5B8DB8 100%);
+  padding-top:50px;
 }
+
+/* 星空闪烁小点 */
+body::before{
+  content:'';position:absolute;top:0;left:0;width:100%;height:100%;
+  background-image:
+    radial-gradient(2px 2px at 20px 30px, rgba(100,150,200,0.3), transparent),
+    radial-gradient(2px 2px at 40px 70px, rgba(100,150,200,0.2), transparent),
+    radial-gradient(1px 1px at 90px 40px, rgba(100,150,200,0.3), transparent),
+    radial-gradient(2px 2px at 160px 120px, rgba(100,150,200,0.2), transparent),
+    radial-gradient(1px 1px at 200px 50px, rgba(100,150,200,0.3), transparent),
+    radial-gradient(2px 2px at 300px 180px, rgba(100,150,200,0.2), transparent),
+    radial-gradient(1px 1px at 400px 90px, rgba(100,150,200,0.3), transparent),
+    radial-gradient(1px 1px at 500px 200px, rgba(100,150,200,0.2), transparent),
+    radial-gradient(2px 2px at 600px 60px, rgba(100,150,200,0.3), transparent),
+    radial-gradient(1px 1px at 700px 150px, rgba(100,150,200,0.2), transparent),
+    radial-gradient(1px 1px at 800px 220px, rgba(100,150,200,0.2), transparent),
+    radial-gradient(2px 2px at 900px 80px, rgba(100,150,200,0.3), transparent);
+  pointer-events:none;z-index:0;animation:twinkle 4s ease-in-out infinite alternate;
+}
+@keyframes twinkle{0%{opacity:0.4;}100%{opacity:0.8;}}
 
 .bg{
   position:absolute;top:0;left:0;width:100%;height:100%;
-  background-size:cover;background-position:center;
+  background-size:contain;background-position:center;background-repeat:no-repeat;
   transition:opacity 0.8s ease;
 }
 
+/* 文字容器 - 无方框 */
 .text-box{
-  position:absolute;top:50%;left:5%;transform:translateY(-50%);
-  text-align:left;z-index:10;width:80%;
+  position:absolute;top:12%;left:50%;transform:translateX(-50%);
+  text-align:center;z-index:10;width:80%;
   transition:opacity 0.6s ease;
+  pointer-events:none;
 }
 
+/* 白色发光文字 */
 .main-title{
-  font-size:64px;color:#FFFFFF;
-  text-shadow:0 2px 6px rgba(0,0,0,0.5), 0 4px 16px rgba(0,0,0,0.3);
-  font-weight:700;letter-spacing:6px;margin-bottom:16px;
+  font-size:64px;font-weight:700;letter-spacing:6px;margin-bottom:30px;
+  color:#FFFFFF;
+  text-shadow:0 0 20px rgba(150,200,255,0.5), 0 0 40px rgba(100,150,255,0.3), 0 2px 4px rgba(0,0,0,0.2);
+  animation:slideInLeft 1s ease-out forwards;
 }
 
 .intro-text{
-  font-size:28px;color:#FFFFFF;
-  text-shadow:0 2px 4px rgba(0,0,0,0.5), 0 3px 10px rgba(0,0,0,0.3);
+  font-size:28px;color:#F0F6FF;
   font-weight:400;letter-spacing:3px;line-height:1.8;
+  text-shadow:0 0 15px rgba(150,200,255,0.4), 0 2px 4px rgba(0,0,0,0.2);
+  animation:slideInRight 1s ease-out 0.3s forwards;
+  opacity:0;
+}
+
+/* 欢迎语消失 */
+.intro-text.fade-out{
+  animation:fadeOut 0.8s ease forwards;
+}
+@keyframes fadeOut{
+  to{opacity:0;}
+}
+
+/* 第2屏介绍文字保持白色 readable */
+#page2 .intro-text, #page3 .intro-text{
+  color:#FFFFFF;
+  text-shadow:0 2px 8px rgba(0,0,0,0.3);
 }
 
 .prompt{
@@ -42,30 +85,329 @@ body{
   animation:blink 1.5s ease-in-out infinite;
 }
 .prompt-text{
-  font-size:28px;color:#FFFFFF;
-  text-shadow:0 2px 4px rgba(0,0,0,0.5), 0 3px 10px rgba(0,0,0,0.3);
+  font-size:22px;color:#FFFFFF;
+  text-shadow:0 0 10px rgba(100,150,255,0.3);
   font-weight:300;letter-spacing:4px;
 }
 .arrow{
-  font-size:32px;color:#FFFFFF;
-  text-shadow:0 2px 4px rgba(0,0,0,0.5);
+  font-size:28px;color:#FFFFFF;
+  text-shadow:0 0 10px rgba(100,150,255,0.3);
   margin-top:4px;
   animation:arrowMove 1.2s ease-in-out infinite;
 }
 
+
+
+/* 相册打开时暂停背景动画和交互 */
+.gallery-open .main-title,
+.gallery-open .intro-text,
+.gallery-open .prompt,
+.gallery-open .arrow{animation-play-state:paused !important;}
+.gallery-open .click-glow,
+.gallery-open .stardust{display:none !important;}
+.gallery-open .bg,
+.gallery-open .text-box,
+.gallery-open .prompt{pointer-events:none !important;}
+
+/* 相册遮罩 */
+.gallery-overlay{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,0.7);z-index:30;
+  display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(6px);
+}
+.gallery-overlay.show{display:flex;}
+.gallery-box{
+  position:relative;max-width:85%;max-height:85%;
+  background:#FFFFFF;border-radius:16px;
+  padding:20px;box-shadow:0 20px 60px rgba(0,0,0,0.3);
+  display:flex;flex-direction:column;align-items:center;
+}
+.gallery-box img{
+  max-width:100%;max-height:65vh;
+  border-radius:12px;object-fit:contain;
+}
+.gallery-nav{
+  display:flex;gap:12px;margin-top:16px;
+  align-items:center;
+}
+.gallery-nav button{
+  padding:8px 20px;border:none;border-radius:8px;
+  background:#E8F0FA;color:#4A7AAB;
+  font-size:16px;cursor:pointer;transition:all 0.2s;
+  font-family:inherit;
+}
+.gallery-nav button:hover{background:#D0E0F0;transform:scale(1.05);}
+.gallery-counter{
+  font-size:14px;color:#666;margin:0 8px;
+}
+.gallery-end-hint{
+  font-size:12px;color:#888;margin-left:6px;
+  font-weight:400;letter-spacing:1px;
+}
+
+/* 关于我弹窗 */
+.about-overlay{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,0.6);z-index:30;
+  display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(6px);
+}
+.about-overlay.show{display:flex;}
+.about-box{
+  position:relative;max-width:500px;width:85%;
+  background:#FFFFFF;border-radius:20px;
+  padding:40px 36px;box-shadow:0 20px 60px rgba(0,0,0,0.25);
+  text-align:center;
+}
+.about-box h2{
+  font-size:24px;color:#4A7AAB;margin-bottom:16px;
+  font-weight:600;letter-spacing:2px;
+}
+.about-box p{
+  font-size:16px;color:#555;line-height:2;
+  margin:6px 0;letter-spacing:0.5px;
+}
+.about-box .highlight{
+  color:#4A90C4;font-weight:500;
+}
+
+.close-btn{
+  position:absolute;top:10px;right:14px;
+  font-size:13px;color:#999;cursor:pointer;
+  padding:2px 10px;border-radius:6px;
+  background:rgba(0,0,0,0.04);transition:all 0.2s;
+  font-family:inherit;letter-spacing:0.5px;
+}
+.close-btn:hover{color:#333;background:rgba(0,0,0,0.08);}
+
+/* 我的爱好弹窗 */
+.hobby-overlay{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,0.6);z-index:30;
+  display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(6px);
+}
+.hobby-overlay.show{display:flex;}
+.hobby-box{
+  position:relative;max-width:450px;width:85%;
+  background:linear-gradient(135deg, #E8F4FA, #D0E8F5);
+  border-radius:20px;padding:36px 32px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.2);
+  text-align:center;
+}
+.hobby-box h2{
+  font-size:24px;color:#4A7AAB;margin-bottom:18px;
+  font-weight:600;letter-spacing:2px;
+}
+.hobby-tag{
+  display:inline-block;background:#FFFFFF;border-radius:14px;
+  padding:8px 18px;margin:5px 6px;
+  font-size:16px;color:#4A90C4;font-weight:500;
+  box-shadow:0 2px 8px rgba(74,144,196,0.12);
+  letter-spacing:1px;
+}
+
+/* 联系我弹窗 */
+.contact-box{
+  position:relative;max-width:420px;width:85%;
+  background:#FFFFFF;border-radius:20px;
+  padding:28px 24px;box-shadow:0 20px 60px rgba(0,0,0,0.2);
+  text-align:center;
+}
+.contact-box h2{font-size:22px;color:#4A7AAB;margin-bottom:14px;font-weight:600;letter-spacing:2px;}
+.contact-box textarea{
+  width:92%;height:80px;padding:10px 12px;
+  border:1px solid #D0E0F0;border-radius:10px;
+  font-size:14px;font-family:inherit;color:#555;
+  resize:none;outline:none;background:#F5F9FF;
+  margin-top:8px;
+}
+.contact-box textarea:focus{border-color:#4A90C4;}
+.contact-box .send-btn{
+  margin-top:10px;padding:8px 28px;border:none;border-radius:10px;
+  background:#4A90C4;color:#FFF;font-size:14px;cursor:pointer;
+  font-family:inherit;transition:all 0.2s;
+}
+.contact-box .send-btn:hover{background:#3A7AB0;}
+.contact-box .comment-list{
+  margin-top:12px;max-height:120px;overflow-y:auto;
+  text-align:left;font-size:13px;color:#666;
+  border-top:1px solid #E8F0F8;padding-top:8px;
+}
+.contact-box .comment-item{
+  padding:6px 0;border-bottom:1px solid #F0F5FA;
+  line-height:1.4;
+}
+.contact-box .comment-item .time{font-size:11px;color:#B0C8D8;}
+/* 点击波纹效果 */
+.ripple{
+  position:fixed;border-radius:50%;
+  background:radial-gradient(circle, rgba(255,255,255,0.4), transparent);
+  transform:scale(0);
+  animation:rippleAnim 0.6s ease-out forwards;
+  pointer-events:none;z-index:20;
+}
+@keyframes rippleAnim{
+  to{transform:scale(4);opacity:0;}
+}
+
+/* 点击时文字脉冲 */
+.click-pulse{
+  animation:clickPulse 0.3s ease-out !important;
+}
+@keyframes clickPulse{
+  0%{transform:scale(1);}
+  50%{transform:scale(0.97);}
+  100%{transform:scale(1);}
+}
+
+/* 点击星尘效果 */
+.stardust{
+  position:fixed;border-radius:50%;pointer-events:none;z-index:20;
+  animation:starDust 0.8s ease-out forwards;
+}
+@keyframes starDust{
+  0%{transform:translate(0,0) scale(1);opacity:1;}
+  100%{transform:translate(var(--dx),var(--dy)) scale(0);opacity:0;}
+}
+
+/* 点击时柔光闪 */
+.click-glow{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:radial-gradient(circle at var(--cx) var(--cy), rgba(180,220,255,0.15), transparent 60%);
+  pointer-events:none;z-index:15;
+  animation:glowFade 0.6s ease-out forwards;
+}
+@keyframes glowFade{0%{opacity:1;}100%{opacity:0;}}
+
+/* 星光笼罩 */
+.starlight-overlay{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  z-index:12;pointer-events:none;
+  background:radial-gradient(ellipse at center, rgba(10,20,50,0.3), rgba(5,10,30,0.6));
+  animation:starlightReveal 3s ease-in-out forwards;
+}
+.starlight-overlay::before{
+  content:'';position:absolute;top:0;left:0;width:100%;height:100%;
+  background-image:
+    radial-gradient(2px 2px at 10% 20%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(3px 3px at 25% 60%, rgba(200,220,255,0.5), transparent),
+    radial-gradient(2px 2px at 45% 15%, rgba(255,255,255,0.7), transparent),
+    radial-gradient(3px 3px at 60% 70%, rgba(180,210,255,0.5), transparent),
+    radial-gradient(2px 2px at 80% 30%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(3px 3px at 90% 80%, rgba(200,220,255,0.5), transparent),
+    radial-gradient(2px 2px at 15% 85%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(3px 3px at 70% 45%, rgba(180,210,255,0.6), transparent);
+  animation:twinkle 2s ease-in-out infinite alternate;
+}
+@keyframes starlightReveal{
+  0%{opacity:1;}
+  70%{opacity:1;}
+  100%{opacity:0;}
+}
+
+/* 飘落星光 */
+.falling-star{
+  position:fixed;border-radius:50%;pointer-events:none;z-index:9;
+  animation:starFall linear infinite;
+  opacity:0;
+}
+@keyframes starFall{
+  0%{transform:translateY(-10px) scale(0.3);opacity:0;}
+  5%{opacity:0.6;}
+  90%{opacity:0.3;}
+  100%{transform:translateY(105vh) scale(1);opacity:0;}
+}
+
+/* 手机适配 */
+@media(max-width:768px){
+  .main-title{font-size:40px !important;letter-spacing:4px !important;}
+  .intro-text{font-size:20px !important;}
+  .nav-links{gap:6px !important;}
+  .nav-links a,.nav-links .nav-btn{font-size:11px !important;padding:4px 6px !important;}
+  .navbar{padding:8px 10px !important;}
+  .navbar .logo{font-size:16px !important;letter-spacing:1px !important;}
+  #clockDisplay{font-size:11px !important;padding-left:4px !important;}
+  .text-box{width:90% !important;top:10% !important;}
+  .prompt-text{font-size:18px !important;}
+  .arrow{font-size:22px !important;}
+  .secret-btn{font-size:12px !important;padding:6px 14px !important;}
+  .gallery-box{padding:12px !important;max-width:92% !important;}
+  .about-box,.hobby-box,.contact-box{padding:20px 16px !important;max-width:92% !important;}
+  .hobby-tag{font-size:13px !important;padding:5px 12px !important;margin:3px 4px !important;}
+  .gallery-nav button{font-size:13px !important;padding:6px 12px !important;}
+  .contact-box textarea{width:88% !important;}
+}
+@media(max-width:480px){
+  .main-title{font-size:32px !important;}
+  .nav-links a,.nav-links .nav-btn{font-size:10px !important;padding:3px 4px !important;}
+  .navbar .logo{font-size:14px !important;}
+  #clockDisplay{font-size:10px !important;}
+  .falling-star{display:none !important;}
+}
+
 @keyframes blink{0%,100%{opacity:0.5;}50%{opacity:1;}}
 @keyframes arrowMove{0%,100%{transform:translateY(0);}50%{transform:translateY(8px);}}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+@keyframes slideInLeft{0%{transform:translateX(-100px);opacity:0;}100%{transform:translateX(0);opacity:1;}}
+@keyframes slideInRight{0%{transform:translateX(100px);opacity:0;}100%{transform:translateX(0);opacity:1;}}
 </style>
 </head>
 <body>
+<style>
+/* 导航栏 */
+.navbar{
+  position:fixed;top:0;left:0;right:0;z-index:25;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:12px 30px;
+  background:linear-gradient(90deg, rgba(90,170,220,0.9), rgba(130,200,235,0.85));
+  backdrop-filter:blur(8px);
+  backdrop-filter:blur(8px);
+}
+.navbar .logo{
+  font-size:20px;color:#FFFFFF;font-weight:600;letter-spacing:3px;
+  text-shadow:0 1px 4px rgba(0,0,0,0.08);
+}
+.nav-links{
+  display:flex;gap:12px;list-style:none;margin:0;padding:0;align-items:center;
+}
+.nav-links a, .nav-links .nav-btn{
+  color:rgba(255,255,255,0.9);text-decoration:none;font-size:14px;
+  font-weight:400;transition:all 0.3s;padding:6px 12px;border-radius:8px;
+  cursor:pointer;border:none;background:none;font-family:inherit;
+  letter-spacing:0.5px;
+}
+.nav-links a:hover, .nav-links .nav-btn:hover{
+  color:#FFFFFF;background:rgba(255,255,255,0.15);
+}
+.nav-links .nav-btn.active{
+  color:#FFFFFF;background:rgba(255,255,255,0.2);
+}
+</style>
+
+<!-- 导航栏 -->
+<nav class="navbar">
+  <div class="logo">花海</div>
+  <ul class="nav-links">
+    <li><span class="nav-btn" id="navAboutBtn">关于我</span></li>
+    <li><span class="nav-btn" id="navHobbyBtn">我的爱好</span></li>
+    <li><a href="#works">作品集</a></li>
+    <li><span class="nav-btn" id="navContactBtn">联系我</span></li>
+    <li><span class="nav-btn" id="navHomeBtn">回主页</span></li>
+    <li><span class="nav-btn" id="navMusicBtn">播放音乐</span></li>
+    <li><span class="nav-btn" id="navAlbumBtn">关于我的相册</span></li>
+    <li style="font-size:13px;color:rgba(255,255,255,0.7);font-weight:300;letter-spacing:0.5px;padding-left:8px;font-family:'Comic Sans MS','Chalkboard SE','幼圆',cursive;" id="clockDisplay">--:--:--</li>
+    <li style="font-size:13px;color:rgba(255,255,255,0.7);font-weight:300;letter-spacing:0.5px;padding-left:8px;font-family:'Comic Sans MS','Chalkboard SE','幼圆',cursive;" id="clockDisplay">--:--:--</li>
+  </ul>
+</nav>
 
 <div class="bg" id="bgA" style="z-index:1;opacity:1;"></div>
 <div class="bg" id="bgB" style="z-index:0;opacity:0;"></div>
 
 <!-- 第1屏：花海 -->
 <div class="text-box" id="page1">
-  <div class="main-title" style="text-align:left;">花海</div>
-  <div class="intro-text" style="text-align:left;">你好，欢迎来到花海</div>
+  <div class="main-title" style="text-align:center;">花海</div>
 </div>
 
 <!-- 第2屏：介绍 -->
@@ -73,7 +415,7 @@ body{
   <div class="intro-text">
     这是花的海洋<br>
     这里的花是蓝色的，很漂亮<br>
-    是自己画的
+    是我随手在网上找的
   </div>
 </div>
 
@@ -83,32 +425,107 @@ body{
   <div class="intro-text" id="imgIntro"></div>
 </div>
 
-<!-- 谢谢观看 -->
-<div class="text-box" id="endText" style="opacity:0;display:none;">
-  <div class="main-title">谢谢观看</div>
-</div>
-
 <div class="prompt" id="prompt">
   <div class="prompt-text">请摁一下</div>
   <div class="arrow">▼</div>
 </div>
 
+<div style="position:fixed;bottom:22%;left:50%;transform:translateX(-50%);z-index:15;text-align:center;">
+  <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:6px;letter-spacing:1px;">点一下有惊喜</div>
+  <button onclick="toggleSecret(event)" style="padding:8px 20px;border:none;border-radius:10px;background:rgba(255,255,255,0.15);color:#FFF;font-size:14px;cursor:pointer;backdrop-filter:blur(4px);font-family:inherit;letter-spacing:1px;">显示秘密</button>
+  <div id="secretContent" style="display:none;margin-top:10px;padding:14px 20px;background:rgba(255,255,255,0.1);backdrop-filter:blur(4px);border-radius:12px;color:#F0F6FF;font-size:15px;line-height:1.6;letter-spacing:0.5px;">
+    <div style="text-align:right;margin-bottom:6px;">
+      <span onclick="closeSecret(event)" style="font-size:12px;color:rgba(255,255,255,0.4);cursor:pointer;padding:2px 8px;border-radius:4px;">退出</span>
+    </div>
+    这个网站是我亲手创作的<br>
+    每一朵花、每一颗星星<br>
+    都是她的想象和热爱 💙
+  </div>
+</div>
+
+<!-- 联系我弹窗 -->
+<div class="contact-overlay" id="contactOverlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:30;display:none;align-items:center;justify-content:center;">
+  <div class="contact-box">
+    <span class="close-btn" onclick="document.getElementById('contactOverlay').style.display='none';document.body.classList.remove('gallery-open');">退出</span>
+    <h2>联系我</h2>
+    <textarea id="msgInput" placeholder="写下你想说的话…"></textarea>
+    <button class="send-btn" onclick="addComment()">发送</button>
+    <div class="comment-list" id="commentList">
+      <div class="comment-item">欢迎留言～ <span class="time">刚刚</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- 相册弹窗 -->
+<div class="gallery-overlay" id="galleryOverlay">
+  <div class="gallery-box">
+    <span class="close-btn" onclick="document.body.classList.remove('gallery-open');document.getElementById('galleryOverlay').classList.remove('show');">退出</span>
+    <img id="galleryImg" src="" alt="相片">
+    <div class="gallery-nav">
+      <button id="galleryPrev">◀ 上一张</button>
+      <span class="gallery-counter" id="galleryCounter"></span>
+      <span class="gallery-end-hint" id="galleryEndHint"></span>
+      <button id="galleryNext">下一张 ▶</button>
+    </div>
+  </div>
+</div>
+
+<!-- 关于我弹窗 -->
+<div class="about-overlay" id="aboutOverlay">
+  <div class="about-box">
+    <h2>关于我</h2>
+    <span class="close-btn" onclick="document.getElementById('aboutOverlay').classList.remove('show');document.body.classList.remove('gallery-open');">退出</span>
+    <p style="font-size:15px;color:#5B8DB8;line-height:1.9;margin-top:10px;text-align:left;padding:0 8px;">
+      大家好，我是<span class="highlight">黄雪莉</span>，英文名 <span class="highlight">Lily</span>。<br><br>
+      我来自一中附小，是一名很喜欢<span class="highlight">浪漫主题</span>的小学生。<br>
+      我的星座是<span class="highlight">双子座</span>，有时候活泼，有时候安静，<br>
+      性格多变但很好相处。<br><br>
+      我的爱好是玩《逃出惊魂夜》和《蛋仔派对》，<br>
+      每次玩都觉得很开心！<br><br>
+      我最喜欢的颜色是<span class="highlight">淡蓝色</span>、<span class="highlight">天然蓝</span>和<span class="highlight">天空蓝</span>，<br>
+      因为蓝色让我想起天空和海洋，自由又宁静。<br><br>
+      我喜欢一切浪漫美好的事物——花海、星空、晚霞、微风。<br>
+      这个网站是我亲手创作的，每一张图、每一段文字，<br>
+      都带着我对这个世界的热爱和想象。<br><br>
+      很高兴你能来到这里，希望你喜欢我的花海世界。
+    </p>
+  </div>
+</div>
+
+<!-- 我的爱好弹窗 -->
+<div class="hobby-overlay" id="hobbyOverlay">
+  <div class="hobby-box">
+    <h2>我的爱好</h2>
+    <span class="close-btn" onclick="document.getElementById('hobbyOverlay').classList.remove('show');document.body.classList.remove('gallery-open');">退出</span>
+    <div class="hobby-tag">画画</div>
+    <div class="hobby-tag">去野炊</div>
+    <div class="hobby-tag">户外大自然</div>
+    <div class="hobby-tag">打羽毛球</div>
+    <div class="hobby-tag">逃出惊魂夜</div>
+    <div class="hobby-tag">蛋仔派对</div>
+    <div class="hobby-tag">恐怖躲猫猫</div>
+    <p style="font-size:14px;color:#6A9DB8;margin-top:16px;line-height:1.6;">
+      这些爱好让我的生活充满乐趣和色彩
+    </p>
+  </div>
+</div>
+
 <script>
 const images = [
-  "img3.jpg",
-  "img2.png",
-  "u=2986821151,1279372047&fm=253&fmt=auto&app=120&f=JPEG.webp"
+  "img3_m.jpg",
+  "img2_m.jpg",
+  "u2986821151_m.jpg"
 ];
 
 const titles = [
-  "蓝花世界",
+  "兰花的世界",
   "郁金香世界",
   "蓝花世界"
 ];
 
 const intros = [
-  "这里的花朵也是蓝色的，也是自己画的<br>我是参照我在河边看到一坡柳树才想到的<br>才开始动手画画",
-  "这是粉色的郁金香，也是自己画的<br>是本作者出去游玩而看到的",
+  "去荷兰花世界参观时<br>这里的花朵是蓝色的，很漂亮",
+  "这是蓝色的郁金香，很美丽<br>是本作者出去游玩而看到的",
   "你知道为什么现在已经是第三张蓝色的花吗？<br>因为我是双子座，双子座的幸运色是蓝色<br>所以我喜欢蓝色的花，这个花会好看一点<br>这个是我从第一张图片上编程课而想到的<br>把它画了下来，来做背景图，做草稿图"
 ];
 
@@ -119,36 +536,73 @@ const bgA = document.getElementById('bgA');
 const bgB = document.getElementById('bgB');
 bgA.style.backgroundImage = 'url("u=1792083036,3890024348&fm=253&fmt=auto&app=120&f=JPEG.webp")';
 
-document.body.addEventListener('click', function() {
+// 动画只播一次，主页返回时不重播
+setTimeout(function() {
+  var t = document.querySelector('#page1 .main-title');
+  var i = document.querySelector('#page1 .intro-text');
+  if (t) t.style.animation = 'none';
+  if (i) i.style.animation = 'none';
+}, 1500);
+
+document.body.addEventListener('click', function(e) {
+  // 只有点击文字区域或提示才切换页面
+  var clickTarget = e.target;
+  var allowTransition = clickTarget.closest('.text-box') || clickTarget.closest('.prompt') || clickTarget.closest('.main-title') || clickTarget.closest('.intro-text');
+  if (!allowTransition) return;
+  // 相册打开时不做任何事
+  if (document.body.classList.contains('gallery-open')) return;
+  
+  // 星尘散落
+  const colors = ['#FFFFFF','#C0D8FF','#A8C8FF','#FFE8C0','#FFD0E0'];
+  for (let i = 0; i < 18; i++) {
+    const star = document.createElement('div');
+    star.className = 'stardust';
+    const size = 3 + Math.random() * 6;
+    star.style.width = star.style.height = size + 'px';
+    star.style.background = colors[Math.floor(Math.random() * colors.length)];
+    star.style.left = (e.clientX + (Math.random() - 0.5) * 30) + 'px';
+    star.style.top = (e.clientY + (Math.random() - 0.5) * 30) + 'px';
+    star.style.setProperty('--dx', (Math.random() - 0.5) * 200 + 'px');
+    star.style.setProperty('--dy', (Math.random() - 0.5) * 200 + 'px');
+    star.style.boxShadow = '0 0 6px ' + colors[0];
+    document.body.appendChild(star);
+    setTimeout(() => star.remove(), 900);
+  }
+  
+  // 点击柔光
+  const glow = document.createElement('div');
+  glow.className = 'click-glow';
+  glow.style.setProperty('--cx', e.clientX + 'px');
+  glow.style.setProperty('--cy', e.clientY + 'px');
+  document.body.appendChild(glow);
+  setTimeout(() => glow.remove(), 700);
+  
   if (mode === 0) {
-    // 第1屏 → 第2屏
     mode = 1;
     document.getElementById('page1').style.opacity = '0';
     setTimeout(() => {
       document.getElementById('page1').style.display = 'none';
-      document.getElementById('page2').style.display = 'block';
-      document.getElementById('page2').style.opacity = '1';
+      setTimeout(() => {
+        document.getElementById('page2').style.display = 'block';
+        document.getElementById('page2').style.opacity = '1';
+      }, 100);
     }, 600);
     
   } else if (mode === 1) {
-    // 第2屏 → 开始换图
     mode = 2;
     document.getElementById('page2').style.opacity = '0';
     setTimeout(() => {
       document.getElementById('page2').style.display = 'none';
       document.getElementById('page3').style.display = 'block';
       document.getElementById('page3').style.opacity = '1';
-      // 显示第一张图的信息
       document.getElementById('imgTitle').textContent = titles[0];
       document.getElementById('imgIntro').innerHTML = intros[0];
     }, 600);
     
   } else if (mode === 2) {
-    // 换图
     imgStep++;
     
     if (imgStep < images.length) {
-      // 切换背景
       if (active === 'A') {
         bgB.style.backgroundImage = 'url("' + images[imgStep] + '")';
         bgB.style.zIndex = '1'; bgB.style.opacity = '1'; bgA.style.opacity = '0'; active = 'B';
@@ -158,7 +612,6 @@ document.body.addEventListener('click', function() {
         bgA.style.zIndex = '1'; bgA.style.opacity = '1'; bgB.style.opacity = '0'; active = 'A';
         setTimeout(() => { bgB.style.zIndex = '0'; bgB.style.backgroundImage = 'none'; }, 900);
       }
-      // 更新文字
       document.getElementById('imgTitle').textContent = titles[imgStep];
       document.getElementById('imgIntro').innerHTML = intros[imgStep];
     }
@@ -169,11 +622,345 @@ document.body.addEventListener('click', function() {
       document.getElementById('prompt').style.opacity = '0';
       setTimeout(() => {
         document.getElementById('page3').style.display = 'none';
-        document.getElementById('prompt').style.display = 'none';
-        document.getElementById('endText').style.display = 'block';
-        document.getElementById('endText').style.opacity = '1';
+        document.getElementById('prompt').style.display = 'block';
+        document.getElementById('prompt').style.opacity = '1';
       }, 600);
     }
+  } else if (mode === 3) {
+    mode = 0; imgStep = 0;
+    bgA.style.zIndex = '1'; bgA.style.opacity = '1'; bgA.style.backgroundImage = 'url("u=1792083036,3890024348&fm=253&fmt=auto&app=120&f=JPEG.webp")';
+    bgB.style.zIndex = '0'; bgB.style.opacity = '0'; bgB.style.backgroundImage = 'none';
+    active = 'A';
+    setTimeout(() => {
+      document.getElementById('page1').style.display = 'block';
+      document.getElementById('page1').style.opacity = '1';
+      document.getElementById('prompt').style.display = 'block';
+      document.getElementById('prompt').style.opacity = '1';
+    }, 600);
+  }
+});
+
+// 返回主页
+document.getElementById('navHomeBtn').addEventListener('click', function(e) {
+  e.stopPropagation();
+  // 只关闭弹窗，不动主页
+  document.body.classList.remove('gallery-open');
+  document.getElementById('aboutOverlay').classList.remove('show');
+  document.getElementById('hobbyOverlay').classList.remove('show');
+  document.getElementById('contactOverlay').style.display = 'none';
+  galOverlay.classList.remove('show');
+  // 如果不在主页，回到第一屏
+  if (mode !== 0) {
+    mode = 0; imgStep = 0;
+    bgA.style.zIndex = '1'; bgA.style.opacity = '1'; bgA.style.backgroundImage = 'url("u=1792083036,3890024348&fm=253&fmt=auto&app=120&f=JPEG.webp")';
+    bgB.style.zIndex = '0'; bgB.style.opacity = '0'; bgB.style.backgroundImage = 'none';
+    active = 'A';
+    document.getElementById('page1').style.display = 'block'; document.getElementById('page1').style.opacity = '1';
+    document.getElementById('page2').style.display = 'none'; document.getElementById('page2').style.opacity = '0';
+    document.getElementById('page3').style.display = 'none'; document.getElementById('page3').style.opacity = '0';
+    document.getElementById('prompt').style.display = 'block'; document.getElementById('prompt').style.opacity = '1';
+  }
+});
+
+// 鼠标跟随星光
+const starColors = ['#FFFFFF','#C0D8FF','#A8C8FF','#FFE8C0','#FFD0E0'];
+let lastStar = 0;
+document.body.addEventListener('mousemove', function(e) {
+  if (document.body.classList.contains('gallery-open')) return;
+  const now = Date.now();
+  if (now - lastStar < 25) return;
+  lastStar = now;
+  for (let s = 0; s < 3; s++) {
+    const star = document.createElement('div');
+    star.className = 'stardust';
+    const size = 1.5 + Math.random() * 4;
+  star.style.width = star.style.height = size + 'px';
+  star.style.background = starColors[Math.floor(Math.random() * starColors.length)];
+  star.style.left = (e.clientX + (Math.random() - 0.5) * 10) + 'px';
+  star.style.top = (e.clientY + (Math.random() - 0.5) * 10) + 'px';
+  star.style.setProperty('--dx', (Math.random() - 0.5) * 40 + 'px');
+  star.style.setProperty('--dy', (Math.random() - 0.5) * 40 + 'px');
+  star.style.boxShadow = '0 0 4px ' + starColors[0];
+  document.body.appendChild(star);
+  setTimeout(() => star.remove(), 800);
+  }
+});
+
+// 飘落星光
+function createFallingStar() {
+  if (document.body.classList.contains('gallery-open')) return;
+  for (var s = 0; s < 2; s++) {
+    var star = document.createElement('div');
+    star.className = 'falling-star';
+    var size = 3 + Math.random() * 5;
+    star.style.width = star.style.height = size + 'px';
+    star.style.background = ['#FFFFFF','#C0D8FF','#A8C8FF','#FFE8C0','#E8D0FF'][Math.floor(Math.random() * 5)];
+    star.style.left = Math.random() * 100 + '%';
+    star.style.top = '-10px';
+    star.style.boxShadow = '0 0 6px ' + star.style.background;
+    star.style.animationDuration = (7 + Math.random() * 10) + 's';
+    star.style.animationDelay = (Math.random() * 2) + 's';
+    document.body.appendChild(star);
+    setTimeout(function() { star.remove(); }, 20000);
+  }
+}
+setInterval(createFallingStar, 200);
+
+// 头像 → 相册（从黄莉芸文件随机选）
+const folderImgs = [
+  "黄莉芸文件/0f9bb3f21433a030ee15963668c80456.jpg",
+  "黄莉芸文件/10b206d289980976b78500b2022a0f4c.jpg",
+  "黄莉芸文件/1202e7575e8f1b2cb6088a7b4df0e701.jpg",
+  "黄莉芸文件/16d0cea1801d477575bcc7f7d9f529be.jpg",
+  "黄莉芸文件/20846323f292b6e59afb98e2eaf8746a.jpg",
+  "黄莉芸文件/2dcd367e6687d2c38dcd24704c908a89.jpg",
+  "黄莉芸文件/307cd4ea4f7982fc192ff161f874190f.jpg",
+  "黄莉芸文件/3b51b0454c54d1b0a8b51eab8932aa25.jpg",
+  "黄莉芸文件/46f565e6b547c7eab66f18d5188ea07a.jpg",
+  "黄莉芸文件/471783e61e5dd526b08a328f3674db3e.jpg",
+  "黄莉芸文件/49ef05588174bf90bcc6cbbe84c3dce2.jpg",
+  "黄莉芸文件/4b51cb4723fc98682f1e8d5b9e57ba7d.jpg",
+  "黄莉芸文件/4c7d1ffab33ef92da80b3cf75c2de328.jpg",
+  "黄莉芸文件/4cebfdc3c514ffeab2e25bfd5584a4f4.jpg",
+  "黄莉芸文件/4eecceee9988377376f64d766997d2f9.jpg",
+  "黄莉芸文件/57edf9470bbf6b4ecbbf314830e4cd2b.jpg",
+  "黄莉芸文件/5e11eb7a10b525387d56b8b5b74c169e.jpg",
+  "黄莉芸文件/62c1011d8a015687eebf127f3fc49cdf.jpg",
+  "黄莉芸文件/63a09ff20adebd4042b216cb16ffd937.jpg",
+  "黄莉芸文件/6daa65fb46d91c707e9128e1811fcf87.jpg",
+  "黄莉芸文件/6dc2f7056dd3fee1f401eff47cf6aac9.jpg",
+  "黄莉芸文件/74bd2e42ed548f4ee560c445bbf14f62.jpg",
+  "黄莉芸文件/79b52c753b17fed75614076c69440fcb.jpg",
+  "黄莉芸文件/7a2bffdf0d71949b6d13d14d1f5cec25.jpg",
+  "黄莉芸文件/7c9202eba495c619a91bfa75238fe2c5.jpg",
+  "黄莉芸文件/80b2f464555773f131c4645946f9dedd.jpg",
+  "黄莉芸文件/8239bae0e2f5e4510ef23bc3f6b4f5a4.jpg",
+  "黄莉芸文件/917a5433a4872d602a31bbac4fe86d30.jpg",
+  "黄莉芸文件/952ef28069947e6ec333a5e510ed57a5.jpg",
+  "黄莉芸文件/97f29942806c4ee0b75d86ddbe3a6274.jpg",
+  "黄莉芸文件/9a7bfd8f1aa9511a5fc09af7f65275b6.jpg",
+  "黄莉芸文件/9a810ead9a878b23fa8171ef94840526.jpg",
+  "黄莉芸文件/a46a251eda6da5f8f975cd6d72394fcb.jpg",
+  "黄莉芸文件/ad4418221d8f41c933ccd1fb06b728a7.jpg",
+  "黄莉芸文件/bed68e76a3538ed1b7fece8f1187e9a1.jpg",
+  "黄莉芸文件/bfae9a64d7a287e529ca77836c89cb91.jpg",
+  "黄莉芸文件/c027aa60f656a1b2e5991d29bb238843.jpg",
+  "黄莉芸文件/c33fe33c202d845eef2606ba9dba364c.jpg",
+  "黄莉芸文件/c9609c83f4a396589d569e0f46e4490c.jpg",
+  "黄莉芸文件/d2638d36ace77f80ccc2f65553626020.jpg",
+  "黄莉芸文件/dc8b32eec79a7e7ac54858a9fe052182.jpg",
+  "黄莉芸文件/dfcdf5a9781b0e027e1c90e04f16fadc.jpg",
+  "黄莉芸文件/e6fb1c6ae22c1ca38fdcd511bc8ef624.jpg",
+  "黄莉芸文件/ea300728ccc3ad618c4f85caa420d5b4.jpg",
+  "黄莉芸文件/ec9c49339e91bb4bac9a2e4407e1196b.jpg",
+  "黄莉芸文件/f12b44edde4342a17632e6a85752387a.jpg",
+  "黄莉芸文件/f30bd80ac9ca846d3d39a6845dc0846f.jpg",
+  "黄莉芸文件/f54afd45664dac4a862d0d63a546ae84.jpg",
+  "黄莉芸文件/faf41bfaec82de19507298c6333cf1a4.jpg",
+  "黄莉芸文件/fcc937a4c9c323e5b0d194b31dbb7326.jpg",
+  "黄莉芸文件/58ee3d6d55fbb2fb20400512b0a24cae4723dcbe.jpeg"
+];
+let gIdx = 0;
+const galOverlay = document.getElementById('galleryOverlay');
+const galImg = document.getElementById('galleryImg');
+const galCounter = document.getElementById('galleryCounter');
+
+function showGallery(idx) {
+  if (idx < 0 || idx >= folderImgs.length) return;
+  gIdx = idx;
+  galImg.src = folderImgs[gIdx];
+  galCounter.textContent = (gIdx + 1) + ' / ' + folderImgs.length;
+  document.getElementById('galleryEndHint').textContent = 
+    (gIdx === folderImgs.length - 1) ? '当前是最后一张' : '';
+}
+
+// 随机选头像 - 已改用文字按钮
+
+document.getElementById('navAlbumBtn').addEventListener('click', function(e) {
+  e.stopPropagation();
+  document.body.classList.add('gallery-open');
+  showGallery(0);
+  galOverlay.classList.add('show');
+});
+
+// 关于我
+document.getElementById('navAboutBtn').addEventListener('click', function(e) {
+  e.stopPropagation();
+  document.body.classList.add('gallery-open');
+  document.getElementById('aboutOverlay').classList.add('show');
+});
+// 关于我点外面关闭
+document.getElementById('aboutOverlay').addEventListener('click', function(e) {
+  if (e.target === this) { this.classList.remove('show'); document.body.classList.remove('gallery-open'); }
+});
+
+// 显示/隐藏秘密
+function toggleSecret(e) {
+  e.stopPropagation();
+  e.preventDefault();
+  var secret = document.getElementById('secretContent');
+  var btn = e.target;
+  if (secret.style.display === 'none') {
+    secret.style.display = 'block';
+    btn.textContent = '隐藏秘密';
+  } else {
+    secret.style.display = 'none';
+    btn.textContent = '显示秘密';
+  }
+}
+
+// 关闭秘密
+function closeSecret(e) {
+  e.stopPropagation();
+  e.preventDefault();
+  document.getElementById('secretContent').style.display = 'none';
+  var btns = document.querySelectorAll('button');
+  for (var i = 0; i < btns.length; i++) {
+    if (btns[i].textContent === '隐藏秘密') { btns[i].textContent = '显示秘密'; break; }
+  }
+}
+
+// 实时时钟
+function updateClock() {
+  var now = new Date();
+  var h = now.getHours().toString().padStart(2,'0');
+  var m = now.getMinutes().toString().padStart(2,'0');
+  var s = now.getSeconds().toString().padStart(2,'0');
+  document.getElementById('clockDisplay').textContent = h + ':' + m + ':' + s;
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// 优雅音乐
+document.getElementById('navMusicBtn').addEventListener('click', function(e) {
+  e.stopPropagation();
+  if (window.musicPlaying) {
+    window.musicPlaying = false;
+    if (window.musicCtx) { window.musicCtx.close(); window.musicCtx = null; }
+    document.getElementById('navMusicBtn').textContent = '播放音乐';
+    return;
+  }
+  var ctx = new (window.AudioContext || window.webkitAudioContext)();
+  window.musicCtx = ctx;
+  window.musicPlaying = true;
+  document.getElementById('navMusicBtn').textContent = '停止音乐';
+  
+  // 主音量
+  var masterGain = ctx.createGain();
+  masterGain.gain.value = 0.12;
+  masterGain.connect(ctx.destination);
+  
+  // 旋律音符和和弦进行
+  var melody = [
+    {note: 523.25, time: 0, dur: 1.2},
+    {note: 587.33, time: 1.0, dur: 0.8},
+    {note: 659.25, time: 1.8, dur: 1.0},
+    {note: 523.25, time: 2.8, dur: 0.6},
+    {note: 659.25, time: 3.4, dur: 0.8},
+    {note: 783.99, time: 4.2, dur: 1.5},
+    {note: 587.33, time: 5.7, dur: 0.6},
+    {note: 659.25, time: 6.3, dur: 0.8},
+    {note: 523.25, time: 7.1, dur: 1.8}
+  ];
+  
+  function playSequence(startTime) {
+    // 播放旋律
+    melody.forEach(function(m) {
+      var osc = ctx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = m.note;
+      var g = ctx.createGain();
+      g.gain.setValueAtTime(0.001, startTime + m.time);
+      g.gain.linearRampToValueAtTime(0.08, startTime + m.time + 0.15);
+      g.gain.linearRampToValueAtTime(0.06, startTime + m.time + m.dur * 0.5);
+      g.gain.exponentialRampToValueAtTime(0.001, startTime + m.time + m.dur);
+      osc.connect(g);
+      g.connect(masterGain);
+      osc.start(startTime + m.time);
+      osc.stop(startTime + m.time + m.dur);
+    });
+    
+    // 背景和弦（柔和铺垫）
+    var chords = [
+      {freqs: [261.63, 392.00, 523.25], time: 0},
+      {freqs: [293.66, 440.00, 587.33], time: 3.5},
+      {freqs: [329.63, 493.88, 659.25], time: 7.0}
+    ];
+    chords.forEach(function(ch) {
+      ch.freqs.forEach(function(f) {
+        var o2 = ctx.createOscillator();
+        o2.type = 'sine';
+        o2.frequency.value = f;
+        var g2 = ctx.createGain();
+        g2.gain.setValueAtTime(0.001, startTime + ch.time);
+        g2.gain.linearRampToValueAtTime(0.04, startTime + ch.time + 0.5);
+        g2.gain.linearRampToValueAtTime(0.03, startTime + ch.time + 2.5);
+        g2.gain.exponentialRampToValueAtTime(0.001, startTime + ch.time + 4);
+        o2.connect(g2);
+        g2.connect(masterGain);
+        o2.start(startTime + ch.time);
+        o2.stop(startTime + ch.time + 4);
+      });
+    });
+  }
+  
+  playSequence(ctx.currentTime);
+  // 循环
+  function loop() {
+    if (!window.musicPlaying) return;
+    setTimeout(function() {
+      if (!window.musicPlaying) return;
+      playSequence(ctx.currentTime);
+      loop();
+    }, 9500);
+  }
+  loop();
+});
+
+// 我的爱好
+document.getElementById('navHobbyBtn').addEventListener('click', function(e) {
+  e.stopPropagation();
+  document.body.classList.add('gallery-open');
+  document.getElementById('hobbyOverlay').classList.add('show');
+});
+
+// 联系我
+document.getElementById('navContactBtn').addEventListener('click', function(e) {
+  e.stopPropagation();
+  document.body.classList.add('gallery-open');
+  document.getElementById('contactOverlay').style.display = 'flex';
+});
+
+// 添加评论
+function addComment() {
+  var input = document.getElementById('msgInput');
+  var text = input.value.trim();
+  if (!text) return;
+  var now = new Date();
+  var time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  var item = document.createElement('div');
+  item.className = 'comment-item';
+  item.innerHTML = text + ' <span class="time">' + time + '</span>';
+  document.getElementById('commentList').appendChild(item);
+  input.value = '';
+}
+
+document.getElementById('hobbyOverlay').addEventListener('click', function(e) {
+  if (e.target === this) { this.classList.remove('show'); document.body.classList.remove('gallery-open'); }
+});
+document.getElementById('contactOverlay').addEventListener('click', function(e) {
+  if (e.target === this) { this.style.display = 'none'; document.body.classList.remove('gallery-open'); }
+});
+document.getElementById('galleryPrev').addEventListener('click', function() {
+  showGallery(gIdx - 1);
+});
+document.getElementById('galleryNext').addEventListener('click', function() {
+  showGallery(gIdx + 1);
+});
+galOverlay.addEventListener('click', function(e) {
+  if (e.target === galOverlay) {
+    document.body.classList.remove('gallery-open');
+    galOverlay.classList.remove('show');
   }
 });
 </script>
