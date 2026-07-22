@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BILIBILI 登录</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+  min-height:100vh;
+  background:linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+  display:flex;align-items:center;justify-content:center;
+  font-family:"Microsoft YaHei","PingFang SC",sans-serif;
+  overflow:hidden;
+  position:relative;
+}
+
+/* ── BILIBILI 粒子画布 ── */
+#biliCanvas{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  z-index:0;pointer-events:none;
+}
+
+/* ── 登录卡片 ── */
+.login-card{
+  position:relative;z-index:1;
+  width:400px;padding:50px 40px 40px;
+  background:rgba(255,255,255,0.06);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-radius:24px;
+  border:1px solid rgba(255,255,255,0.1);
+  box-shadow:0 25px 60px rgba(0,0,0,0.4);
+  text-align:center;
+  animation:cardIn 0.8s ease-out;
+}
+@keyframes cardIn{
+  0%{transform:translateY(40px) scale(0.95);opacity:0;}
+  100%{transform:translateY(0) scale(1);opacity:1;}
+}
+
+/* 标题 BILIBILI */
+.login-card h1{
+  font-size:42px;font-weight:900;letter-spacing:8px;
+  background:linear-gradient(90deg, #FB7299, #00A1D6, #FB7299);
+  background-size:200% auto;
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  animation:gradientShift 3s ease infinite;
+  margin-bottom:6px;
+}
+@keyframes gradientShift{
+  0%,100%{background-position:0% center;}
+  50%{background-position:100% center;}
+}
+
+.login-card .subtitle{
+  font-size:13px;color:rgba(255,255,255,0.35);
+  letter-spacing:6px;margin-bottom:32px;
+}
+
+/* 输入框 */
+.input-group{
+  position:relative;margin-bottom:20px;text-align:left;
+}
+.input-group input{
+  width:100%;padding:14px 16px 14px 44px;
+  background:rgba(255,255,255,0.07);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:12px;outline:none;
+  font-size:15px;color:#EEE;font-family:inherit;
+  transition:all 0.3s;
+}
+.input-group input:focus{
+  border-color:#FB7299;
+  box-shadow:0 0 0 3px rgba(251,114,153,0.15);
+  background:rgba(255,255,255,0.1);
+}
+.input-group input::placeholder{color:rgba(255,255,255,0.25);}
+
+.input-group .icon{
+  position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  font-size:18px;opacity:0.4;
+}
+
+/* 登录按钮 */
+.login-btn{
+  width:100%;padding:14px;margin-top:8px;
+  border:none;border-radius:12px;
+  font-size:16px;font-weight:600;font-family:inherit;
+  color:#FFF;cursor:pointer;letter-spacing:4px;
+  background:linear-gradient(90deg, #FB7299, #00A1D6);
+  background-size:200% auto;
+  transition:all 0.3s;
+  position:relative;overflow:hidden;
+}
+.login-btn:hover{
+  background-position:right center;
+  transform:translateY(-2px);
+  box-shadow:0 8px 25px rgba(251,114,153,0.3);
+}
+.login-btn:active{transform:translateY(0);}
+
+/* ── I love you（放在星星位置）── */
+.love-overlay{
+  position:fixed;top:0;left:0;width:100%;height:100%;z-index:50;
+  display:none;align-items:center;justify-content:center;
+  flex-direction:column;gap:10px;
+  background:rgba(0,0,0,0.4);
+  animation:loveIn 0.8s ease-out forwards;
+}
+.love-overlay.show{display:flex;}
+@keyframes loveIn{0%{opacity:0;}100%{opacity:1;}}
+
+.love-text{
+  font-size:90px;font-weight:900;letter-spacing:10px;
+  background:linear-gradient(135deg, #FFB7C5, #FB7299, #FFB7C5, #A8D8FF);
+  background-size:300% auto;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  animation:loveShine 2s ease infinite, lovePop 0.8s ease-out forwards;
+  transform:scale(0);text-align:center;
+  filter:drop-shadow(0 0 50px rgba(251,114,153,0.3));
+}
+@keyframes loveShine{
+  0%,100%{background-position:0% center;}
+  50%{background-position:100% center;}
+}
+@keyframes lovePop{
+  0%{transform:scale(0) rotate(-8deg);opacity:0;}
+  60%{transform:scale(1.2) rotate(2deg);opacity:1;}
+  100%{transform:scale(1) rotate(0deg);opacity:1;}
+}
+
+.love-sub{
+  font-size:40px;color:rgba(255,255,255,0.5);
+  letter-spacing:10px;margin-top:16px;font-weight:300;
+  animation:loveFade 1.5s 0.6s forwards;opacity:0;
+}
+@keyframes loveFade{to{opacity:1;letter-spacing:8px;}}
+
+/* 飘落爱心 */
+.heart{
+  position:fixed;z-index:51;pointer-events:none;
+  font-size:20px;
+  animation:heartFall linear forwards;
+  opacity:0;
+}
+@keyframes heartFall{
+  0%{transform:translateY(-20px) rotate(0deg) scale(0.5);opacity:0;}
+  15%{opacity:0.6;transform:scale(1);}
+  85%{opacity:0.4;}
+  100%{transform:translateY(105vh) rotate(360deg) scale(0.3);opacity:0;}
+}
+
+/* 底部链接 */
+.login-card .footer{
+  margin-top:28px;font-size:13px;
+  color:rgba(255,255,255,0.3);
+  letter-spacing:1px;
+}
+.login-card .footer a{
+  color:#FB7299;text-decoration:none;transition:color 0.2s;
+}
+.login-card .footer a:hover{color:#00A1D6;}
+
+/* 底部品牌文字 */
+.login-card .brand{
+  margin-top:20px;font-size:11px;
+  color:rgba(255,255,255,0.15);letter-spacing:2px;
+}
+
+/* ── 响应式 ── */
+@media(max-width:480px){
+  .login-card{width:92%;padding:36px 24px;}
+  .login-card h1{font-size:32px;letter-spacing:4px;}
+}
+
+.back-btn{
+  position:fixed;top:16px;right:16px;z-index:200;
+  padding:8px 16px;border-radius:8px;
+  background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);
+  color:rgba(255,255,255,0.5);font-size:13px;cursor:pointer;
+  font-family:"Microsoft YaHei","PingFang SC",sans-serif;letter-spacing:1px;
+  text-decoration:none;transition:all 0.3s;
+}
+.back-btn:hover{background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.3);}
+</style>
+</head>
+<body>
+<a class="back-btn" href="index.html">← 退出</a>
+
+<!-- BILIBILI 粒子特效 Canvas -->
+<canvas id="biliCanvas"></canvas>
+
+<!-- 登录卡片 -->
+<div class="login-card">
+  <h1>BILIBILI</h1>
+  <div class="subtitle">— 登录你的世界 —</div>
+
+  <div class="input-group">
+    <span class="icon">👤</span>
+    <input type="text" placeholder="用户名 / 手机号" autocomplete="username">
+  </div>
+
+  <div class="input-group">
+    <span class="icon">🔒</span>
+    <input type="password" placeholder="密码" autocomplete="current-password">
+  </div>
+
+  <button class="login-btn">登 录</button>
+
+  <div class="footer">
+    还没有账号？<a href="#">立即注册</a>
+  </div>
+  <div class="brand">哔哩哔哩 (゜-゜)つロ 干杯~</div>
+</div>
+
+<!-- I love you 遮罩 -->
+<div class="love-overlay" id="loveOverlay">
+  <div class="love-text">I love you.</div>
+  <div class="love-sub">— 你是我最美的风景 —</div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  BILIBILI 粒子特效 — 粒子拼出 B L I B I
+// ══════════════════════════════════════════════
+
+const canvas = document.getElementById('biliCanvas');
+const ctx = canvas.getContext('2d');
+
+let W, H;
+function resize(){
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// —— 每个字母的点阵（8×10 网格，比例 0.6）——
+const letters = {
+  B: [
+    [1,1,1,1,1,1],
+    [1,0,0,0,0,1],
+    [1,0,0,0,0,1],
+    [1,1,1,1,1,1],
+    [1,0,0,0,0,1],
+    [1,0,0,0,0,1],
+    [1,0,0,0,0,1],
+    [1,1,1,1,1,1],
+  ],
+  L: [
+    [1,0,0,0,0,0],
+    [1,0,0,0,0,0],
+    [1,0,0,0,0,0],
+    [1,0,0,0,0,0],
+    [1,0,0,0,0,0],
+    [1,0,0,0,0,0],
+    [1,0,0,0,0,0],
+    [1,1,1,1,1,1],
+  ],
+  I: [
+    [0,0,1,1,0,0],
+    [0,0,1,1,0,0],
+    [0,0,1,1,0,0],
+    [0,0,1,1,0,0],
+    [0,0,1,1,0,0],
+    [0,0,1,1,0,0],
+    [0,0,1,1,0,0],
+    [0,0,1,1,0,0],
+  ],
+};
+
+// —— 拼出 B L I B I ——
+const seq = ['B','L','I','B','I'];
+const dotSize   = 10;      // 每个点的大小
+const gapX      = 14;      // 字母间水平间距
+const colW      = 8;       // 字母网格列数
+
+// 生成所有目标点位置
+let targets = [];
+let ox = 0;
+seq.forEach(ch => {
+  const grid = letters[ch];
+  if (!grid) return;
+  grid.forEach((row, r) => {
+    row.forEach((v, c) => {
+      if (v) targets.push({ x: ox + c * dotSize, y: r * dotSize });
+    });
+  });
+  ox += colW * dotSize + gapX;
+});
+
+// 计算整体宽高
+const totalW = targets.reduce((m, p) => Math.max(m, p.x), 0) + dotSize;
+const totalH = 8 * dotSize + dotSize;
+
+// 粒子数组
+let particles = [];
+
+// 初始化：从随机位置飞入
+function initParticles() {
+  particles = targets.map(t => ({
+    targetX: t.x,
+    targetY: t.y,
+    x: Math.random() * W,
+    y: Math.random() * H,
+    vx: 0, vy: 0,
+    size: 3 + Math.random() * 4,
+    hue: 300 + Math.random() * 60,  // 粉色→紫色范围
+  }));
+}
+initParticles();
+
+// —— 鼠标交互：鼠标旁的粒子散开 ——
+let mouseX = -9999, mouseY = -9999;
+document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+document.addEventListener('mouseleave', () => { mouseX = -9999; mouseY = -9999; });
+
+// 偏移量（整体居中 + 浮动）
+let offsetX = 0, offsetY = 0;
+let floatAngle = 0;
+
+function animate() {
+  floatAngle += 0.005;
+  // 整体居中，加上柔和浮动
+  const cx = (W - totalW) / 2;
+  const cy = (H - totalH) / 2;
+  offsetX = cx + Math.sin(floatAngle * 0.7) * 6;
+  offsetY = cy + Math.cos(floatAngle * 0.5) * 4;
+
+  // 清屏 — 拖尾效果
+  ctx.fillStyle = 'rgba(15,12,41,0.12)';
+  ctx.fillRect(0, 0, W, H);
+
+  // 用较亮的圆点
+  particles.forEach(p => {
+    const tx = p.targetX + offsetX;
+    const ty = p.targetY + offsetY;
+
+    // 鼠标排斥
+    let repelX = 0, repelY = 0;
+    const dx = mouseX - tx;
+    const dy = mouseY - ty;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist < 100) {
+      const force = (100 - dist) / 100 * 3;
+      repelX = -dx / dist * force;
+      repelY = -dy / dist * force;
+    }
+
+    // 弹性物理
+    const spring = 0.035;
+    const damping = 0.85;
+    p.vx += (tx - p.x + repelX) * spring + (Math.random() - 0.5) * 0.15;
+    p.vy += (ty - p.y + repelY) * spring + (Math.random() - 0.5) * 0.15;
+    p.vx *= damping;
+    p.vy *= damping;
+    p.x += p.vx;
+    p.y += p.vy;
+
+    // 绘制
+    const hue = p.hue + floatAngle * 20;
+    const alpha = 0.7 + 0.3 * Math.sin(floatAngle * 2 + p.targetX);
+
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fillStyle = `hsla(${hue}, 80%, 70%, ${alpha})`;
+    ctx.fill();
+
+    // 发光
+    ctx.shadowColor = `hsla(${hue}, 80%, 70%, 0.3)`;
+    ctx.shadowBlur = 12;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  });
+
+  // —— 底部飘落的彩色小点（氛围） ——
+  for (let i = 0; i < 3; i++) {
+    const fx = Math.random() * W;
+    const fy = -10;
+    const fsize = 1.5 + Math.random() * 2.5;
+    const fhue = 280 + Math.random() * 80;
+    ctx.beginPath();
+    ctx.arc(fx, fy, fsize, 0, Math.PI * 2);
+    ctx.fillStyle = `hsla(${fhue}, 70%, 60%, 0.15)`;
+    ctx.fill();
+  }
+
+  requestAnimationFrame(animate);
+}
+animate();
+
+// —— 窗口改变时重新居中 ——
+window.addEventListener('resize', () => {
+  resize();
+  // 部分粒子留在原地，不用重置
+});
+
+// 点击登录 → I love you ❤
+document.querySelector('.login-btn').addEventListener('click', function() {
+  // 登录卡淡出
+  document.querySelector('.login-card').style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+  document.querySelector('.login-card').style.opacity = '0';
+  document.querySelector('.login-card').style.transform = 'scale(0.9) translateY(-20px)';
+
+  // I love you 出现在星星位置（屏幕中央）
+  setTimeout(function() {
+    document.querySelector('.login-card').style.display = 'none';
+    document.getElementById('loveOverlay').classList.add('show');
+  }, 500);
+
+  // 飘落爱心
+  var hearts = ['❤','💕','💗','💖','💓','♥'];
+  for (var i = 0; i < 40; i++) {
+    (function(i) {
+      setTimeout(function() {
+        var el = document.createElement('div');
+        el.className = 'heart';
+        el.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+        el.style.left = Math.random() * 95 + '%';
+        el.style.fontSize = (12 + Math.random() * 20) + 'px';
+        el.style.animationDuration = (4 + Math.random() * 5) + 's';
+        el.style.animationDelay = (Math.random() * 2) + 's';
+        document.body.appendChild(el);
+        setTimeout(function() { el.remove(); }, 10000);
+      }, i * 100);
+    })(i);
+  }
+});
+</script>
+</body>
+</html>

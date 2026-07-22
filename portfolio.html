@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我的作品集</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  min-height:100vh;
+  background:linear-gradient(135deg,#0a0a1a,#1a1040,#0f0c29);
+  font-family:"Microsoft YaHei","PingFang SC",sans-serif;
+  color:#fff;
+  overflow-x:hidden;
+}
+
+/* ── 漩涡画布 ── */
+#vortexCanvas{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  pointer-events:none;z-index:0;
+}
+
+/* ── 导航栏 ── */
+.navbar{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px 40px;
+  background:rgba(10,10,26,0.85);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(0,200,255,0.08);
+}
+.navbar .logo{
+  font-size:22px;font-weight:700;letter-spacing:3px;
+  background:linear-gradient(90deg,#00DDFF,#A8D8FF);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+
+.nav-links{display:flex;gap:6px;list-style:none;align-items:center;}
+.nav-links a{
+  color:rgba(255,255,255,0.5);text-decoration:none;font-size:14px;
+  letter-spacing:1px;padding:8px 16px;border-radius:8px;
+  transition:all 0.3s;cursor:pointer;
+}
+.nav-links a:hover{color:#fff;background:rgba(0,200,255,0.1);}
+.nav-links a.active{color:#00DDFF;background:rgba(0,200,255,0.08);}
+
+/* ── 作品集下拉 ── */
+.portfolio-menu{
+  position:relative;
+}
+.portfolio-dropdown{
+  position:absolute;top:100%;right:0;margin-top:8px;
+  min-width:240px;
+  background:rgba(10,10,26,0.95);
+  backdrop-filter:blur(12px);
+  border:1px solid rgba(0,200,255,0.12);
+  border-radius:12px;
+  padding:8px;
+  display:none;flex-direction:column;gap:2px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+}
+.portfolio-dropdown.show{display:flex;}
+.portfolio-dropdown a{
+  display:block;padding:10px 14px;border-radius:8px;
+  color:rgba(255,255,255,0.6);text-decoration:none;font-size:13px;
+  letter-spacing:0.5px;transition:all 0.2s;white-space:nowrap;
+}
+.portfolio-dropdown a:hover{color:#fff;background:rgba(0,200,255,0.1);}
+.portfolio-dropdown .tag{
+  font-size:10px;color:rgba(0,200,255,0.3);letter-spacing:1px;
+  padding:4px 14px 2px;font-weight:300;
+}
+
+/* ── 主内容 ── */
+.hero{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100vh;text-align:center;padding:100px 20px 60px;
+  position:relative;z-index:1;
+}
+.hero h1{
+  font-size:52px;font-weight:900;letter-spacing:8px;margin-bottom:12px;
+  background:linear-gradient(135deg,#00DDFF,#A8D8FF,#C8A8FF);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hero p{
+  font-size:18px;color:rgba(255,255,255,0.35);
+  letter-spacing:6px;font-weight:300;margin-bottom:50px;
+}
+
+/* ── 作品卡片网格 ── */
+.grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:16px;max-width:1100px;width:100%;padding:0 20px;
+}
+
+.card{
+  position:relative;border-radius:16px;overflow:hidden;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.06);
+  padding:24px 20px 20px;
+  text-align:left;text-decoration:none;color:#fff;
+  transition:all 0.3s;cursor:pointer;
+}
+.card:hover{
+  transform:translateY(-4px);
+  border-color:rgba(0,200,255,0.2);
+  box-shadow:0 12px 40px rgba(0,200,255,0.08);
+  background:rgba(255,255,255,0.05);
+}
+.card .icon{font-size:28px;margin-bottom:10px;}
+.card h3{font-size:16px;font-weight:600;letter-spacing:1px;margin-bottom:6px;}
+.card .desc{font-size:12px;color:rgba(255,255,255,0.35);line-height:1.6;letter-spacing:0.5px;}
+.card .badge{
+  display:inline-block;margin-top:10px;padding:3px 10px;
+  border-radius:6px;font-size:10px;letter-spacing:1px;
+  background:rgba(0,200,255,0.08);color:rgba(0,200,255,0.5);
+}
+
+/* ── 底部 ── */
+.footer{
+  text-align:center;padding:30px 20px 40px;
+  font-size:12px;color:rgba(255,255,255,0.12);letter-spacing:2px;
+  position:relative;z-index:1;
+}
+
+@media(max-width:600px){
+  .navbar{padding:12px 16px;}
+  .navbar .logo{font-size:18px;}
+  .nav-links a{font-size:12px;padding:6px 10px;}
+  .hero h1{font-size:32px;letter-spacing:4px;}
+  .hero p{font-size:14px;letter-spacing:3px;}
+  .grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<canvas id="vortexCanvas"></canvas>
+
+<!-- ═══ 导航栏 ═══ -->
+<nav class="navbar">
+  <div class="logo">✦ 作品集</div>
+  <ul class="nav-links">
+    <li><a href="#" class="active" onclick="scrollToTop()">首页</a></li>
+    <li class="portfolio-menu">
+      <a href="#" onclick="toggleDropdown(event)">作品集 ▾</a>
+      <div class="portfolio-dropdown" id="dropdown">
+        <div class="tag">✦ 特效作品</div>
+        <a href="shockwave.html" target="_blank">⚡ 能量冲击波</a>
+        <a href="cursor-particles.html" target="_blank">✨ 粒子光标</a>
+        <a href="login-bilibili.html" target="_blank">🔐 B站登录页</a>
+        <a href="anime-flower-sea.html" target="_blank">🌸 二次元→花海</a>
+        <a href="shockwave-flower.html" target="_blank">⚡ 冲击波→花海</a>
+      </div>
+    </li>
+  </ul>
+</nav>
+
+<!-- ═══ 主内容 ═══ -->
+<section class="hero">
+  <h1>✦ 我的作品集 ✦</h1>
+  <p>— 点一下，看特效 —</p>
+
+  <div class="grid">
+    <a href="shockwave.html" target="_blank" class="card">
+      <div class="icon">⚡</div>
+      <h3>能量冲击波</h3>
+      <div class="desc">蓝青科技风，粒子迸发+冲击环+六边形网格+扫描线，全屏震撼</div>
+      <span class="badge">Canvas 粒子</span>
+    </a>
+
+    <a href="cursor-particles.html" target="_blank" class="card">
+      <div class="icon">✨</div>
+      <h3>粒子光标</h3>
+      <div class="desc">白蓝渐变粒子跟随鼠标飞舞，透明背景可叠加任意页面</div>
+      <span class="badge">鼠标交互</span>
+    </a>
+
+    <a href="login-bilibili.html" target="_blank" class="card">
+      <div class="icon">🔐</div>
+      <h3>B站登录页</h3>
+      <div class="desc">BILIBILI 粉蓝渐变主题，粒子拼字 + 毛玻璃卡片</div>
+      <span class="badge">UI 设计</span>
+    </a>
+
+    <a href="anime-flower-sea.html" target="_blank" class="card">
+      <div class="icon">🌸</div>
+      <h3>二次元 → 花海</h3>
+      <div class="desc">4秒二次元特效开场（樱花+字符+光球），过渡到花海世界</div>
+      <span class="badge">两段式</span>
+    </a>
+
+    <a href="shockwave-flower.html" target="_blank" class="card">
+      <div class="icon">⚡</div>
+      <h3>冲击波 → 花海</h3>
+      <div class="desc">科技能量冲击波开场，4秒后无缝转入花海星空</div>
+      <span class="badge">两段式</span>
+    </a>
+  </div>
+</section>
+
+<div class="footer">✦ 每一行代码，都是我的想象和热爱 ✦</div>
+
+<script>
+// 下拉菜单
+function toggleDropdown(e){
+  e.preventDefault();
+  e.stopPropagation();
+  document.getElementById('dropdown').classList.toggle('show');
+}
+document.addEventListener('click', function(){
+  document.getElementById('dropdown').classList.remove('show');
+});
+
+function scrollToTop(){
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ═══ 漩涡特效 ═══
+var vc = document.getElementById('vortexCanvas');
+var vctx = vc.getContext('2d');
+var vw, vh;
+
+function vResize() {
+  vw = vc.width = window.innerWidth;
+  vh = vc.height = window.innerHeight;
+}
+vResize();
+window.addEventListener('resize', vResize);
+
+var vPts = [];
+var vCount = 150;
+
+for (var i = 0; i < vCount; i++) {
+  var angle = Math.random() * Math.PI * 2;
+  var radius = 20 + Math.random() * Math.min(vw, vh) * 0.5;
+  vPts.push({
+    angle: angle,
+    radius: radius,
+    baseRadius: radius,
+    speed: 0.002 + Math.random() * 0.006,
+    size: 1.5 + Math.random() * 4,
+    hue: 190 + Math.random() * 40,
+    rise: Math.random() * Math.PI * 2,
+    offset: Math.random() * 100,
+  });
+}
+
+var vTime = 0;
+
+function vDraw() {
+  vTime += 0.01;
+
+  vctx.clearRect(0, 0, vw, vh);
+
+  var cx = vw / 2;
+  var cy = vh / 2;
+
+  for (var i = 0; i < vPts.length; i++) {
+    var p = vPts[i];
+
+    // 漩涡旋转：半径随时间脉动
+    p.angle += p.speed;
+    var pulse = 1 + 0.15 * Math.sin(vTime * 0.5 + p.offset);
+
+    var x = cx + Math.cos(p.angle) * p.baseRadius * pulse;
+    var y = cy + Math.sin(p.angle) * p.baseRadius * pulse;
+
+    // 上下浮动
+    y += Math.sin(vTime * 0.8 + p.rise) * 15;
+
+    // 透明度随半径变化（边缘淡出）
+    var dist = Math.sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy));
+    var maxDist = Math.min(vw, vh) * 0.5;
+    var alpha = Math.max(0, 1 - dist / maxDist) * 0.5;
+
+    if (alpha < 0.01) continue;
+
+    var hue = p.hue + Math.sin(vTime + p.rise) * 15;
+
+    // 光晕
+    vctx.shadowColor = 'hsla(' + hue + ',100%,65%,' + (alpha * 0.3) + ')';
+    vctx.shadowBlur = 15;
+
+    vctx.beginPath();
+    vctx.arc(x, y, p.size * (0.5 + 0.5 * pulse), 0, Math.PI * 2);
+    vctx.fillStyle = 'hsla(' + hue + ',100%,75%,' + alpha + ')';
+    vctx.fill();
+
+    vctx.shadowBlur = 0;
+
+    // 连线（近的粒子连成螺旋线）
+    for (var j = i + 1; j < Math.min(i + 4, vPts.length); j++) {
+      var p2 = vPts[j];
+      var x2 = cx + Math.cos(p2.angle) * p2.baseRadius * (1 + 0.15 * Math.sin(vTime * 0.5 + p2.offset));
+      var y2 = cy + Math.sin(p2.angle) * p2.baseRadius * (1 + 0.15 * Math.sin(vTime * 0.5 + p2.offset));
+      y2 += Math.sin(vTime * 0.8 + p2.rise) * 15;
+
+      var dx = x - x2;
+      var dy = y - y2;
+      var d = Math.sqrt(dx * dx + dy * dy);
+      if (d < 80) {
+        var a2 = alpha * (1 - d / 80) * 0.3;
+        vctx.beginPath();
+        vctx.moveTo(x, y);
+        vctx.lineTo(x2, y2);
+        vctx.strokeStyle = 'hsla(' + hue + ',100%,70%,' + a2 + ')';
+        vctx.lineWidth = 0.5;
+        vctx.stroke();
+      }
+    }
+  }
+
+  requestAnimationFrame(vDraw);
+}
+vDraw();
+</script>
+</body>
+</html>

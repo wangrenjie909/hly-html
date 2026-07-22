@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>能量冲击波</title>
+<style>
+*{margin:0;padding:0;}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:"Microsoft YaHei","PingFang SC",sans-serif;}
+canvas{position:fixed;top:0;left:0;width:100%;height:100%;display:block;}
+
+/* 退出按钮 */
+.back-btn{
+  position:fixed;top:16px;right:16px;z-index:200;
+  padding:8px 16px;border-radius:8px;
+  background:rgba(0,0,0,0.5);border:1px solid rgba(0,200,255,0.15);
+  color:rgba(0,200,255,0.6);font-size:13px;cursor:pointer;
+  font-family:inherit;letter-spacing:1px;
+  text-decoration:none;transition:all 0.3s;
+}
+.back-btn:hover{background:rgba(0,200,255,0.1);color:#fff;border-color:rgba(0,200,255,0.3);}
+
+/* 导航栏 */
+.navbar{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 24px;
+  background:rgba(0,0,0,0.85);
+  border-bottom:1px solid rgba(0,200,255,0.15);
+}
+.navbar .logo{
+  font-size:16px;font-weight:700;letter-spacing:2px;
+  color:#00DDFF;
+}
+.nav-links{display:flex;gap:4px;list-style:none;align-items:center;}
+.nav-links a{
+  color:rgba(255,255,255,0.7);text-decoration:none;font-size:13px;
+  padding:6px 12px;border-radius:6px;cursor:pointer;
+  transition:all 0.25s;
+}
+.nav-links a:hover{color:#fff;background:rgba(0,200,255,0.15);}
+
+/* 作品集按钮 */
+.portfolio-menu{position:relative;}
+.portfolio-btn{
+  background:rgba(0,200,255,0.08) !important;
+  border:1px solid rgba(0,200,255,0.15);
+  color:#00DDFF !important;font-weight:600;
+}
+
+/* 下拉菜单 */
+.portfolio-dropdown{
+  position:absolute;top:100%;left:0;margin-top:6px;
+  min-width:210px;
+  background:rgba(10,10,26,0.95);
+  border:1px solid rgba(0,200,255,0.12);
+  border-radius:10px;padding:6px;
+  display:none;flex-direction:column;gap:1px;
+  box-shadow:0 16px 48px rgba(0,0,0,0.6);
+}
+.portfolio-dropdown.show{display:flex;}
+.portfolio-dropdown a{
+  display:block;padding:8px 12px;border-radius:6px;
+  color:rgba(255,255,255,0.6);text-decoration:none;font-size:12px;
+}
+.portfolio-dropdown a:hover{color:#fff;background:rgba(0,200,255,0.12);}
+.portfolio-dropdown .tag{
+  font-size:9px;color:rgba(0,200,255,0.3);letter-spacing:1px;
+  padding:4px 12px 2px;
+}
+
+/* 底部提示 */
+.hint{
+  position:fixed;bottom:40px;left:50%;transform:translateX(-50%);
+  z-index:10;text-align:center;
+  color:rgba(0,200,255,0.3);font-size:13px;letter-spacing:3px;
+  pointer-events:none;
+}
+</style>
+</head>
+<body>
+<a class="back-btn" href="index.html">← 退出</a>
+
+<!-- 导航栏 -->
+<nav class="navbar">
+  <div class="logo">✦ 作品集</div>
+  <ul class="nav-links">
+    <li class="portfolio-menu">
+      <a class="portfolio-btn" onclick="toggleMenu()">📂 作品集 ▾</a>
+      <div class="portfolio-dropdown" id="menu">
+        <div class="tag">✦ 特效</div>
+        <a href="shockwave.html">⚡ 能量冲击波</a>
+        <a href="cursor-particles.html">✨ 粒子光标</a>
+        <a href="login-bilibili.html">🔐 B站登录页</a>
+        <a href="anime-flower-sea.html">🌸 二次元→花海</a>
+        <a href="shockwave-flower.html">⚡ 冲击波→花海</a>
+      </div>
+    </li>
+  </ul>
+</nav>
+
+<canvas id="c"></canvas>
+
+<div class="hint">▼ 点击任意处</div>
+
+<script>
+var c = document.getElementById('c');
+var ctx = c.getContext('2d');
+var W, H;
+
+function resize() {
+  W = c.width = window.innerWidth;
+  H = c.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// 作品集下拉
+function toggleMenu() {
+  var m = document.getElementById('menu');
+  if (m.classList.contains('show')) {
+    m.classList.remove('show');
+  } else {
+    m.classList.add('show');
+  }
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.portfolio-menu')) {
+    document.getElementById('menu').classList.remove('show');
+  }
+});
+
+// ---- 冲击波粒子 ----
+var pts = [];
+var rings = [];
+
+function pop(n) {
+  var cx = W/2, cy = H/2;
+  for (var i = 0; i < n; i++) {
+    var a = Math.random() * Math.PI * 2;
+    var spd = 200 + Math.random() * 500;
+    var life = 1.5 + Math.random() * 2.5;
+    pts.push({
+      x: cx + Math.cos(a) * (5 + Math.random() * 20),
+      y: cy + Math.sin(a) * (5 + Math.random() * 20),
+      vx: Math.cos(a) * spd,
+      vy: Math.sin(a) * spd,
+      sz: 1.5 + Math.random() * 4,
+      life: life,
+      max: life,
+      hue: 180 + Math.random() * 40
+    });
+  }
+}
+
+function addRing() {
+  rings.push({
+    r: 10,
+    mr: Math.min(W, H) * 0.75,
+    spd: 200 + Math.random() * 150,
+    w: 3 + Math.random() * 5,
+    op: 1,
+    hue: 190 + Math.random() * 30
+  });
+}
+
+// 初始黑底
+ctx.fillStyle = '#000';
+ctx.fillRect(0, 0, W, H);
+
+// 启动特效
+pop(180);
+addRing();
+setTimeout(function() { addRing(); }, 300);
+setTimeout(function() { pop(180); addRing(); }, 700);
+setTimeout(function() { addRing(); }, 1200);
+setTimeout(function() { pop(180); }, 1800);
+
+// 六边形网格
+function drawGrid(a) {
+  if (a < 0.01) return;
+  ctx.save();
+  ctx.globalAlpha = a * 0.12;
+  ctx.strokeStyle = '#00DDFF';
+  ctx.lineWidth = 0.5;
+  var gap = 40;
+  var R = gap / Math.cos(Math.PI / 6);
+  for (var r = -2; r < H/gap + 2; r++) {
+    for (var c2 = -2; c2 < W/gap + 2; c2++) {
+      var x = c2 * R * 1.5 + (r % 2) * R * 0.5;
+      var y = r * gap * 1.2;
+      ctx.beginPath();
+      for (var i = 0; i < 6; i++) {
+        var ang = Math.PI / 3 * i - Math.PI / 6;
+        if (i === 0) ctx.moveTo(x + R * Math.cos(ang), y + R * Math.sin(ang));
+        else ctx.lineTo(x + R * Math.cos(ang), y + R * Math.sin(ang));
+      }
+      ctx.closePath();
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
+var t0 = Date.now();
+
+function draw() {
+  var el = (Date.now() - t0) / 1000;
+  var prog = Math.min(el / 6, 1);
+  var int = el < 3 ? 1 : Math.max(0, 1 - (el - 3) / 3);
+  var cx = W/2, cy = H/2;
+
+  ctx.fillStyle = 'rgba(0,0,0,0.06)';
+  ctx.fillRect(0, 0, W, H);
+
+  drawGrid(int);
+
+  // 核心光晕
+  if (int > 0.02) {
+    var cs = 30 + prog * 80;
+    var g = ctx.createRadialGradient(cx, cy, 0, cx, cy, cs * 3);
+    g.addColorStop(0, 'rgba(0,200,255,' + (0.15 * int) + ')');
+    g.addColorStop(0.3, 'rgba(0,150,255,' + (0.08 * int) + ')');
+    g.addColorStop(1, 'rgba(0,100,255,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(cx, cy, cs * 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    var cg = ctx.createRadialGradient(cx, cy, 0, cx, cy, cs);
+    cg.addColorStop(0, 'rgba(255,255,255,' + (0.5 * int) + ')');
+    cg.addColorStop(0.2, 'rgba(0,220,255,' + (0.35 * int) + ')');
+    cg.addColorStop(0.6, 'rgba(0,150,255,' + (0.15 * int) + ')');
+    cg.addColorStop(1, 'rgba(0,100,255,0)');
+    ctx.fillStyle = cg;
+    ctx.beginPath();
+    ctx.arc(cx, cy, cs, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // 冲击环
+  for (var i = rings.length - 1; i >= 0; i--) {
+    var ring = rings[i];
+    ring.r += ring.spd * 0.016;
+    ring.op = 1 - ring.r / ring.mr;
+    if (ring.op <= 0 || ring.r > ring.mr) {
+      rings.splice(i, 1);
+      continue;
+    }
+    ctx.beginPath();
+    ctx.arc(cx, cy, ring.r, 0, Math.PI * 2);
+    ctx.strokeStyle = 'hsla(' + ring.hue + ',100%,65%,' + (ring.op * 0.6) + ')';
+    ctx.lineWidth = ring.w * ring.op;
+    ctx.shadowColor = 'hsla(' + ring.hue + ',100%,65%,' + (ring.op * 0.3) + ')';
+    ctx.shadowBlur = 20;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+
+  // 粒子
+  for (var i = pts.length - 1; i >= 0; i--) {
+    var p = pts[i];
+    p.x += p.vx * 0.016;
+    p.y += p.vy * 0.016;
+    p.vx *= 0.98;
+    p.vy *= 0.98;
+    p.life -= 0.016;
+    if (p.life <= 0 || p.x < -50 || p.x > W + 50 || p.y < -50 || p.y > H + 50) {
+      pts.splice(i, 1);
+      continue;
+    }
+    var lr = p.life / p.max;
+    ctx.shadowColor = 'hsla(' + p.hue + ',100%,65%,' + (lr * 0.5) + ')';
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.sz * (0.3 + 0.7 * lr), 0, Math.PI * 2);
+    ctx.fillStyle = 'hsla(' + p.hue + ',100%,75%,' + (lr * 0.8) + ')';
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  // 扫描线
+  if (int > 0.05) {
+    var sy = (el * 300) % (H + 100) - 50;
+    var sg = ctx.createLinearGradient(0, sy - 30, 0, sy + 30);
+    sg.addColorStop(0, 'rgba(0,200,255,0)');
+    sg.addColorStop(0.5, 'rgba(0,200,255,' + (0.06 * int) + ')');
+    sg.addColorStop(1, 'rgba(0,200,255,0)');
+    ctx.fillStyle = sg;
+    ctx.fillRect(0, sy - 30, W, 60);
+  }
+
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>

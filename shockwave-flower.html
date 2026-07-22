@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>能量冲击 · 花海</title>
+<style>
+*{margin:0;padding:0;}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;}
+
+/* ── 冲击波 ── */
+#scene-shockwave{
+  position:fixed;top:0;left:0;width:100%;height:100%;z-index:10;
+  transition:opacity 1.2s ease;
+}
+#scene-shockwave.fade-out{opacity:0;}
+#scene-shockwave canvas{display:block;width:100%;height:100%;}
+
+/* ── 花海 ── */
+#scene-flower{
+  position:fixed;top:0;left:0;width:100%;height:100%;z-index:5;
+  opacity:0;transition:opacity 1.5s ease;
+  display:flex;align-items:center;justify-content:center;
+  text-align:center;
+  background:linear-gradient(180deg,#0a1628,#1a3050,#2a5070,#3a7090,#5a90b0);
+  font-family:"Microsoft YaHei","PingFang SC",sans-serif;
+}
+#scene-flower.show{opacity:1;}
+
+.flower-text{animation:fin 2s ease-out 0.3s forwards;opacity:0;}
+@keyframes fin{0%{transform:translateY(30px);opacity:0}100%{transform:translateY(0);opacity:1}}
+.flower-text h1{
+  font-size:80px;font-weight:900;letter-spacing:16px;
+  color:#fff;text-shadow:0 0 40px rgba(100,180,255,0.3),0 0 80px rgba(100,180,255,0.15);
+  margin-bottom:16px;
+}
+.flower-text p{font-size:22px;color:rgba(255,255,255,0.7);letter-spacing:8px;}
+.flower-text .poem{margin-top:20px;font-size:14px;color:rgba(255,255,255,0.35);letter-spacing:4px;line-height:1.8;}
+
+@media(max-width:600px){
+  .flower-text h1{font-size:48px;letter-spacing:10px;}
+  .flower-text p{font-size:16px;letter-spacing:4px;}
+}
+
+.back-btn{
+  position:fixed;top:16px;right:16px;z-index:200;
+  padding:8px 16px;border-radius:8px;
+  background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);
+  color:rgba(255,255,255,0.5);font-size:13px;cursor:pointer;
+  font-family:"Microsoft YaHei","PingFang SC",sans-serif;letter-spacing:1px;
+  text-decoration:none;transition:all 0.3s;
+}
+.back-btn:hover{background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.3);}
+</style>
+</head>
+<body>
+<a class="back-btn" href="index.html">← 退出</a>
+
+<div id="scene-shockwave"><canvas id="c"></canvas></div>
+
+<div id="scene-flower">
+  <div class="flower-text">
+    <h1>花 海</h1>
+    <p>欢迎来到花的世界</p>
+    <div class="poem">
+      每一朵花，都是星星的眼泪<br>
+      每一片海，都是梦的倒影
+    </div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let W, H;
+
+function resize(){
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// 粒子
+let particles = [];
+let rings = [];
+
+function spawnParticles(n){
+  const cx=W/2, cy=H/2;
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2;
+    const s=200+Math.random()*500;
+    const l=1.5+Math.random()*2.5;
+    particles.push({
+      x:cx+Math.cos(a)*(5+Math.random()*20), y:cy+Math.sin(a)*(5+Math.random()*20),
+      vx:Math.cos(a)*s, vy:Math.sin(a)*s,
+      size:1.5+Math.random()*4, life:l, maxLife:l, hue:180+Math.random()*40
+    });
+  }
+}
+
+function spawnRing(){
+  rings.push({
+    r:10, maxR:Math.min(W,H)*0.75, spd:200+Math.random()*150,
+    w:3+Math.random()*5, op:1, hue:190+Math.random()*30
+  });
+}
+
+// 网格
+function grid(a){
+  if(a<0.01)return;
+  ctx.save();
+  ctx.globalAlpha=a*0.12;
+  ctx.strokeStyle='#00DDFF';
+  ctx.lineWidth=0.5;
+  const gap=40, R=gap/Math.cos(Math.PI/6);
+  for(let r=-2;r<H/gap+2;r++)
+    for(let c=-2;c<W/gap+2;c++){
+      const x=c*R*1.5+(r%2)*R*0.5, y=r*gap*1.2;
+      ctx.beginPath();
+      for(let i=0;i<6;i++){const ang=Math.PI/3*i-Math.PI/6;i===0?ctx.moveTo(x+R*Math.cos(ang),y+R*Math.sin(ang)):ctx.lineTo(x+R*Math.cos(ang),y+R*Math.sin(ang));}
+      ctx.closePath();ctx.stroke();
+    }
+  ctx.restore();
+}
+
+// ── 启动 ──
+ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
+spawnParticles(180); spawnRing();
+setTimeout(()=>spawnRing(),300);
+setTimeout(()=>{spawnParticles(180);spawnRing();},700);
+setTimeout(()=>spawnRing(),1200);
+setTimeout(()=>spawnParticles(180),1800);
+
+const t0=Date.now();
+const TOTAL=4;
+let done=false;
+
+function anim(){
+  const el=(Date.now()-t0)/1000;
+  const prog=Math.min(el/TOTAL,1);
+  const int=1-prog;
+
+  ctx.fillStyle='rgba(0,0,0,0.08)';
+  ctx.fillRect(0,0,W,H);
+
+  const cx=W/2, cy=H/2;
+
+  grid(int);
+
+  // 核心
+  if(int>0.02){
+    const cs=30+prog*80;
+    const g=ctx.createRadialGradient(cx,cy,0,cx,cy,cs*3);
+    g.addColorStop(0,`rgba(0,200,255,${0.15*int})`);
+    g.addColorStop(0.3,`rgba(0,150,255,${0.08*int})`);
+    g.addColorStop(1,'rgba(0,100,255,0)');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,cs*3,0,Math.PI*2); ctx.fill();
+    const cg=ctx.createRadialGradient(cx,cy,0,cx,cy,cs);
+    cg.addColorStop(0,`rgba(255,255,255,${0.5*int})`);
+    cg.addColorStop(0.2,`rgba(0,220,255,${0.35*int})`);
+    cg.addColorStop(0.6,`rgba(0,150,255,${0.15*int})`);
+    cg.addColorStop(1,'rgba(0,100,255,0)');
+    ctx.fillStyle=cg; ctx.beginPath(); ctx.arc(cx,cy,cs,0,Math.PI*2); ctx.fill();
+  }
+
+  // 环
+  for(let i=rings.length-1;i>=0;i--){
+    const r=rings[i];
+    r.r+=r.spd*0.016;
+    r.op=1-r.r/r.maxR;
+    if(r.op<=0||r.r>r.maxR){rings.splice(i,1);continue;}
+    ctx.beginPath(); ctx.arc(cx,cy,r.r,0,Math.PI*2);
+    ctx.strokeStyle=`hsla(${r.hue},100%,65%,${r.op*0.6})`;
+    ctx.lineWidth=r.w*r.op;
+    ctx.shadowColor=`hsla(${r.hue},100%,65%,${r.op*0.3})`;
+    ctx.shadowBlur=20; ctx.stroke(); ctx.shadowBlur=0;
+  }
+
+  // 粒子
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.x+=p.vx*0.016; p.y+=p.vy*0.016;
+    p.vx*=0.98; p.vy*=0.98;
+    p.life-=0.016;
+    if(p.life<=0||p.x<-50||p.x>W+50||p.y<-50||p.y>H+50){particles.splice(i,1);continue;}
+    const lr=p.life/p.maxLife;
+    ctx.shadowColor=`hsla(${p.hue},100%,65%,${lr*0.5})`;
+    ctx.shadowBlur=15;
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.size*(0.3+0.7*lr),0,Math.PI*2);
+    ctx.fillStyle=`hsla(${p.hue},100%,75%,${lr*0.8})`;
+    ctx.fill(); ctx.shadowBlur=0;
+  }
+
+  // 扫描线
+  if(int>0.05){
+    const sy=(el*300)%(H+100)-50;
+    const sg=ctx.createLinearGradient(0,sy-30,0,sy+30);
+    sg.addColorStop(0,'rgba(0,200,255,0)');
+    sg.addColorStop(0.5,`rgba(0,200,255,${0.06*int})`);
+    sg.addColorStop(1,'rgba(0,200,255,0)');
+    ctx.fillStyle=sg; ctx.fillRect(0,sy-30,W,60);
+  }
+
+  // 切换
+  if(el>=TOTAL&&!done){
+    done=true;
+    document.getElementById('scene-shockwave').classList.add('fade-out');
+    document.getElementById('scene-flower').classList.add('show');
+  }
+
+  requestAnimationFrame(anim);
+}
+anim();
+</script>
+</body>
+</html>
